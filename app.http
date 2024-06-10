@@ -1,0 +1,24 @@
+POST https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/register/
+Content-Type: application/json 
+
+{
+  "username": "adam_richard123",
+  "password": "ri",
+  "name": "Adam Richard",
+  "gender": "male"
+}
+
+###
+
+POST https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/login/
+Content-Type: application/json 
+
+{
+  "username":"JoeBiden",
+  "password":"biden@123"
+}
+
+###
+
+GET https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/user/tweets/feed/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMDM5NTN9.eWsGCEWTcn1MjXiL4amX5piqP1BwSLVItJK9GccxAsg
