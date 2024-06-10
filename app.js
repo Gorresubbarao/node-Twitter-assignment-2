@@ -29,29 +29,17 @@ const initializeDBAndServer = async () => {
 
 initializeDBAndServer()
 
-const getFollowingPeopleIdsOfUser = async username => {
-  const getTheFollowingPeopleQuery = `
-  SELECT
-        following_user_id FROM follower
-  INNER JOIN user ON user.user_id = follower.follower_user_id
-  WHERE user.username='${username}';`
-
-  const followingPeople = await db.all(getTheFollowingPeopleQuery)
-  const arrayOfIds = followingPeople.map(eachUser => eachUser.following_user_id)
+// getting followers id's
+const getFollowersIds = async username => {
+  const getFollowersIdsQuery = `SELECT following_user_id FROM follower
+  INNER JOIN user
+  ON user.user_id=follower.follower_user_id
+  WHERE user.username='${username}'
+  `
+  const followingPepoles = await db.all(getFollowersIdsQuery)
+  const arrayOfIds = followingPepoles.map(eachObj => eachObj.following_user_id)
   return arrayOfIds
 }
-
-// getting followers id's
-// const getFollowersIds = async username => {
-//   const getFollowersIdsQuery = `SELECT following_user_id FROM follower
-//   INNER JOIN user
-//   ON user.user_id=follower.follower_user_id
-//   WHERE user.username='${username}'
-//   `
-//   const followingPepoles = await db.all(getFollowersIdsQuery)
-//   const arrayOfIds = followingPepoles.map(eachObj => eachObj.following_user_id)
-//   return arrayOfIds
-// }
 
 // athenticationToken checking
 const athenticationTokenCheking = (request, response, next) => {
@@ -103,33 +91,6 @@ app.post('/register/', async (request, response) => {
   }
 })
 
-// api2 login
-// app.post('/login/', async (request, response) => {
-//   const {username, password} = request.body
-//   const getUserQuery = `SELECT * FROM user WHERE username='${username}';`
-//   const userDbDetails = await db.get(getUserQuery)
-//   if (userDbDetails !== undefined) {
-//     const isPasswordCorrect = await bcrypt.compare(
-//       password,
-//       userDbDetails.password,
-//     )
-
-//     if (isPasswordCorrect) {
-//       const payload = {username: username, userId: userDbDetails.user_id}
-//       const jwtToken = jwt.sign(payload, 'SECRET_KEY')
-//       response.send({jwtToken: jwtToken})
-//     } else {
-//       // scenario 2
-//       response.status(400)
-//       response.send('Invalid password')
-//     }
-//   } else {
-//     // scenario 1
-//     response.status(400)
-//     response.send('Invalid user')
-//   }
-// })
-
 app.post('/login/', async (request, response) => {
   const {username, password} = request.body
   const getUserQuery = `SELECT * FROM user WHERE username= '${username}'`
@@ -153,25 +114,13 @@ app.post('/login/', async (request, response) => {
   }
 })
 
-// api3
-// app.get('/user/tweets/feed/', async (request, response) => {
-//   const {username} = request.body
-//   const followingPeopleIdQuery = await getFollowersIds(username)
-//   const getTweetsQuery = `SELECT username, tweet, date_time as dateTime FROM user INNER JOIN tweet
-//   ON user.user_id = tweet.user_id WHERE user.user_id IN (${followingPeopleIdQuery})
-//   `
-//   const tweets = await db.all(getTweetsQuery)
-//   response.send(tweets)
-//   console.log(tweets)
-// })
-
 app.get(
   '/user/tweets/feed/',
   athenticationTokenCheking,
   async (request, response) => {
     const {username} = request
 
-    const followingPeopleIds = await getFollowingPeopleIdsOfUser(username)
+    const followingPeopleIds = await getFollowersIds(username)
 
     const getTweetsQuery = `SELECT
     username,tweet, date_time as dateTime
@@ -183,5 +132,78 @@ app.get(
     `
     const tweets = await db.all(getTweetsQuery)
     response.send(tweets)
+    console.log(tweets)
   },
 )
+
+// Returns the list of all names of people whom the user follows api 4
+app.get(
+  '/user/following/',
+  athenticationTokenCheking,
+  async (request, response) => {
+    const {username, userId} = request
+    console.log(userId)
+    const getFollowingUsersQuery = `SELECT name FROM follower
+    INNER JOIN user ON user.user_id = follower.following_user_id
+    WHERE follower_user_id = '${userId}';
+    `
+
+    const followingPeople = await db.all(getFollowingUsersQuery)
+    response.send(followingPeople)
+  },
+)
+
+// tweet access athentication
+const tweetAccessVerification = async (request, response, next) => {
+  const {tweetId} = request.params
+  const {userId} = request
+
+  const getTweetQuery = `SELECT
+*
+FROM tweet INNER JOIN follower
+ON tweet.user_id = follower.following_user_id
+WHERE tweet.tweet_id = '${tweetId}' AND follower_user_id = '${userId}';`
+  const tweet = await db.get(getTweetQuery)
+  if (tweet === undefined) {
+    response.status(401)
+    response.send('Invalid Request')
+  } else {
+    next()
+  }
+}
+
+// Returns the list of all names of people whom the user follows api 5
+app.get(
+  '/user/followers/',
+  athenticationTokenCheking,
+  async (request, response) => {
+    const {username, userId} = request
+    const getFollowersQuery = `SELECT DISTINCT name FROM follower
+    INNER JOIN user ON user.user_id = follower.follower_user_id
+    WHERE following_user_id = '${userId}';
+    `
+    const followers = await db.all(getFollowersQuery)
+    response.send(followers)
+  },
+)
+
+// api 6
+app.get(
+  '/tweets/:tweetId/',
+  athenticationTokenCheking,
+  tweetAccessVerification,
+  async (request, response) => {
+    const {username, userId} = request
+    const {tweetId} = request.params
+    const getTweetQuery = `SELECT tweet,
+    (SELECT COUNT() FROM like WHERE tweet_id = '${tweetId}') AS likes,
+    (SELECT COUNT() FROM reply WHERE tweet_id = '${tweetId}') AS replies,
+    date_time AS dateTime
+    FROM tweet
+    WHERE tweet.tweet_id = '${tweetId}' ;`
+    const tweet = await db.get(getTweetQuery)
+    response.send(tweet)
+  },
+)
+
+// 

@@ -21,4 +21,19 @@ Content-Type: application/json
 ###
 
 GET https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/user/tweets/feed/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMDM5NTN9.eWsGCEWTcn1MjXiL4amX5piqP1BwSLVItJK9GccxAsg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMjM0MTl9.RXtLMqw8ntqBIKdwIdcA0WPG3h5Bz_Ya6M5JzL2_j4Q
+
+###
+
+GET https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/user/following/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMjM0MTl9.RXtLMqw8ntqBIKdwIdcA0WPG3h5Bz_Ya6M5JzL2_j4Q
+
+###
+
+GET https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/user/followers/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMjM0MTl9.RXtLMqw8ntqBIKdwIdcA0WPG3h5Bz_Ya6M5JzL2_j4Q
+
+###
+
+GET https://venkatasubbaraohow31njscadijbi.drops.nxtwave.tech/tweets/2/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwidXNlcklkIjoyLCJpYXQiOjE3MTgwMjM0MTl9.RXtLMqw8ntqBIKdwIdcA0WPG3h5Bz_Ya6M5JzL2_j4Q
