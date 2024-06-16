@@ -206,4 +206,106 @@ app.get(
   },
 )
 
-// 
+//If the user requests a tweet of a user he is following, return the list of usernames who liked the tweet API 7
+app.get(
+  '/tweets/:tweetId/likes/',
+  athenticationTokenCheking,
+  tweetAccessVerification,
+  async (request, response) => {
+    const {username, userId} = request
+    const {tweetId} = request.params
+    const likedTweetQuery = `SELECT username FROM user INNER JOIN like 
+    ON user.user_id = like.user_id
+    WHERE tweet_id = ${tweetId}`
+    const likedUsers = await db.all(likedTweetQuery)
+    const arrayOfUserNames = likedUsers.map(eachUser => eachUser.username)
+    console.log(likedUsers)
+    console.log(arrayOfUserNames)
+    response.send({likes: arrayOfUserNames})
+  },
+)
+
+// If the user requests a tweet of a user he is following, return the list of replies. api 8
+app.get(
+  '/tweets/:tweetId/replies/',
+  athenticationTokenCheking,
+  tweetAccessVerification,
+  async (request, response) => {
+    const {username, userId} = request
+    const {tweetId} = request.params
+    const getRepliesQuery = `SELECT name, reply FROM user INNER JOIN reply
+    ON user.user_id = reply.user_id
+    WHERE tweet_id= ${tweetId}`
+    const replies = await db.all(getRepliesQuery)
+    console.log(replies)
+    response.send({replies})
+  },
+)
+
+//Returns a list of all tweets of the user api 9
+app.get(
+  '/user/tweets/',
+  athenticationTokenCheking,
+  async (request, response) => {
+    const {userId} = request
+    const gettweetsQuery = `SELECT tweet, 
+  COUNT(DISTINCT like_id) as likes,
+  COUNT(DISTINCT reply_id) as replies,
+  date_time as dateTime
+   FROM 
+  tweet
+  LEFT JOIN reply 
+  ON tweet.tweet_id = reply.tweet_id
+  LEFT JOIN like
+  ON reply.tweet_id = like.tweet_id
+  WHERE tweet.user_id =${userId}
+  GROUP BY tweet.tweet_id`
+    const allTweets = await db.all(gettweetsQuery)
+    console.log(allTweets)
+    response.send(allTweets)
+  },
+)
+
+//Create a tweet in the tweet table api 10
+app.post(
+  '/user/tweets/',
+  athenticationTokenCheking,
+  async (request, response) => {
+    const {tweet} = request.body
+    const userId = parseInt(request.userId)
+    const dateTime = new Date().toJSON().substring(0, 19).replace('T', ' ')
+    console.log(dateTime)
+    const createTweetQuery = `INSERT INTO 
+  tweet (tweet,user_id,date_time)
+  VALUES ('${tweet}', ${userId}, '${dateTime}')`
+    const createdTweet = await db.run(createTweetQuery)
+    console.log(createdTweet)
+    response.send('Created a Tweet')
+  },
+)
+
+// If the user deletes his tweet api 11
+app.delete(
+  '/tweets/:tweetId/',
+  athenticationTokenCheking,
+  async (request, response) => {
+    const {tweetId} = request.params
+    const {userId} = request
+
+    const getTheTweetQuery = `SELECT * FROM tweet WHERE tweet_id = ${tweetId} AND user_id = ${userId}`
+    const tweet = await db.get(getTheTweetQuery)
+    console.log(tweet)
+
+    if (tweet === undefined) {
+      response.status(401)
+      response.send('Invalid Request')
+    } else {
+      const deleteQuery = `DELETE FROM tweet WHERE tweet_id = ${tweetId}`
+      const deletedTweet = await db.run(deleteQuery)
+      console.log(deletedTweet)
+      response.send('Tweet Removed')
+    }
+  },
+)
+
+module.exports = app
