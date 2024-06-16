@@ -50,12 +50,12 @@ const athenticationTokenCheking = (request, response, next) => {
   }
   if (autherHeader === undefined) {
     response.status(401)
-    response.send('Invalid JWT 66')
+    response.send('Invalid JWT Token')
   } else {
     jwt.verify(jwtToken, 'MY_SCRET_TOKEN', async (error, payload) => {
       if (error) {
         response.status(401)
-        response.send('123Invalid JWT Token')
+        response.send('Invalid JWT Token')
       } else {
         request.username = payload.username
         request.userId = payload.userId
