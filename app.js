@@ -37,7 +37,9 @@ const getFollowersIds = async username => {
   WHERE user.username='${username}'
   `
   const followingPepoles = await db.all(getFollowersIdsQuery)
+  // console.log(followingPepoles, 'followingPepoles')
   const arrayOfIds = followingPepoles.map(eachObj => eachObj.following_user_id)
+  // console.log(arrayOfIds)
   return arrayOfIds
 }
 
@@ -125,14 +127,14 @@ app.get(
     const getTweetsQuery = `SELECT
     username,tweet, date_time as dateTime
     FROM user INNER JOIN tweet ON user.user_id = tweet.user_id
-    WHERE 
+    WHERE
     user.user_id IN (${followingPeopleIds})
     ORDER BY date_time DESC
     LIMIT 4;
     `
     const tweets = await db.all(getTweetsQuery)
     response.send(tweets)
-    console.log(tweets)
+    // console.log(tweets)
   },
 )
 
@@ -142,7 +144,7 @@ app.get(
   athenticationTokenCheking,
   async (request, response) => {
     const {username, userId} = request
-    console.log(userId)
+    // console.log(userId)
     const getFollowingUsersQuery = `SELECT name FROM follower
     INNER JOIN user ON user.user_id = follower.following_user_id
     WHERE follower_user_id = '${userId}';
@@ -153,26 +155,7 @@ app.get(
   },
 )
 
-// tweet access athentication
-const tweetAccessVerification = async (request, response, next) => {
-  const {tweetId} = request.params
-  const {userId} = request
-
-  const getTweetQuery = `SELECT
-*
-FROM tweet INNER JOIN follower
-ON tweet.user_id = follower.following_user_id
-WHERE tweet.tweet_id = '${tweetId}' AND follower_user_id = '${userId}';`
-  const tweet = await db.get(getTweetQuery)
-  if (tweet === undefined) {
-    response.status(401)
-    response.send('Invalid Request')
-  } else {
-    next()
-  }
-}
-
-// Returns the list of all names of people whom the user follows api 5
+// Returns the list of all names of people who follows the user  api 5
 app.get(
   '/user/followers/',
   athenticationTokenCheking,
@@ -186,6 +169,25 @@ app.get(
     response.send(followers)
   },
 )
+
+// tweet access athentication
+const tweetAccessVerification = async (request, response, next) => {
+  const {tweetId} = request.params
+  const {userId} = request
+  console.log(tweet, userId)
+
+  const getTweetQuery = `SELECT
+* FROM tweet INNER JOIN follower
+ON tweet.user_id = follower.following_user_id
+WHERE tweet.tweet_id = '${tweetId}' AND follower_user_id = '${userId}';`
+  const tweet = await db.get(getTweetQuery)
+  if (tweet === undefined) {
+    response.status(401)
+    response.send('Invalid Request')
+  } else {
+    next()
+  }
+}
 
 // api 6
 app.get(
@@ -201,6 +203,7 @@ app.get(
     date_time AS dateTime
     FROM tweet
     WHERE tweet.tweet_id = '${tweetId}' ;`
+
     const tweet = await db.get(getTweetQuery)
     response.send(tweet)
   },
